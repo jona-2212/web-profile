@@ -1,0 +1,41 @@
+# ============================================================
+# terraform.tfvars.example
+# ============================================================
+# CARA PAKAI:
+#   cp terraform.tfvars.example terraform.tfvars
+#   nano terraform.tfvars    ← isi nilai yang sesuai
+#
+# PERINGATAN: Jangan commit terraform.tfvars ke Git!
+#             File ini mengandung credentials sensitif.
+#             Pastikan terraform.tfvars ada di .gitignore
+# ============================================================
+
+# ---- AWS Settings ----
+aws_region    = "us-east-1"
+instance_type = "t2.medium"
+
+# Nama key pair AWS kamu (nama di AWS EC2 → Key Pairs, BUKAN nama file .pem)
+# Di AWS Academy, nama key pair biasanya "vockey" meski file-nya "labsuser.pem"
+# Cek nama asli: aws ec2 describe-key-pairs --query 'KeyPairs[*].KeyName'
+key_name = "vockey"
+
+# CIDR yang boleh SSH ke server
+# Ganti dengan IP kamu: curl ifconfig.me/ip
+# Contoh: "203.0.113.10/32"
+allowed_ssh_cidr = "0.0.0.0/0"
+
+# ---- GitHub Settings ----
+
+# Personal Access Token (PAT)
+# Cara buat: https://github.com/settings/tokens → Generate new token (classic)
+# Scopes yang diperlukan: ✅ repo  ✅ admin:repo_hook
+github_token = "ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+# Username GitHub kamu
+github_owner = "Widhi-yahya"
+
+# Nama repository (tanpa owner prefix)
+github_repo = "web-profile"
+
+# ---- Project Settings ----
+project_name = "web-profile-cicd"

@@ -1,0 +1,33 @@
+Jenkins online 
+dengan semua plugins aktif. Ringkasan status terkini:
+
+✅ Status Sekarang - SEMUA BERJALAN!
+Server	IP	Port	Status
+Jenkins	54.83.49.59	8080	✅ RUNNING (Java 21, 87 plugins)
+SonarQube	54.86.219.185	9000	✅ RUNNING
+Docker	32.197.5.244	22	✅ RUNNING
+Langkah Selanjutnya
+1. Akses Jenkins di Browser
+
+http://54.83.49.59:8080
+Initial Admin Password: 36457385ebe34c67aeb86319ccd34c52
+
+2. Setup Wizard Jenkins (Web UI)
+Buka URL di atas → masukkan password di atas
+Klik "Select plugins to install" → pilih "Install suggested plugins" (atau skip saja, sudah terinstall)
+Buat admin user baru
+Konfirmasi Jenkins URL → klik Save and Finish
+3. Lanjutkan ke README.md Section 5
+Setelah setup wizard selesai, ikuti panduan README.md mulai Step 5.1 untuk:
+
+Konfigurasi SonarQube credentials
+Setup GitHub webhook credentials
+Buat Pipeline job
+Test build pertama
+4. GitHub Webhook (Pending)
+Update github_token di terraform.tfvars dengan PAT asli dari https://github.com/settings/tokens, lalu:
+
+
+terraform apply
+
+Sonar: squ_2622b217842f4b8495bf77ff2d6af9d487704e48

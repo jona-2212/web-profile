@@ -1,0 +1,30 @@
+# ============================================================
+# .gitignore – Terraform CI/CD Project
+# ============================================================
+
+# Terraform state files (JANGAN commit ke Git!)
+terraform.tfstate
+terraform.tfstate.backup
+.terraform/
+.terraform.lock.hcl
+
+# Variable files yang mengandung credentials (JANGAN commit!)
+terraform.tfvars
+*.auto.tfvars
+
+# SSH Key files
+*.pem
+*.key
+*.ppk
+
+# Info files yang digenerate oleh user-data
+*-info.txt
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+*.swp
+*.swo
