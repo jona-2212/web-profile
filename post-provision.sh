@@ -1,12 +1,8 @@
 #!/bin/bash
 # ============================================================
-# post-provision.sh
+# post-provision.sh (FIXED FOR WSL/WINDOWS)
 # Jalankan setelah: terraform apply
 # Script ini mencetak ringkasan lengkap semua resource
-# ============================================================
-# Cara pakai:
-#   chmod +x post-provision.sh
-#   ./post-provision.sh
 # ============================================================
 
 # Warna terminal
@@ -27,11 +23,33 @@ echo ""
 # ---- Ambil output dari Terraform ----
 echo -e "${YELLOW}[INFO] Mengambil output dari Terraform...${NC}"
 
-JENKINS_IP=$(terraform output -raw jenkins_public_ip 2>/dev/null)       || { echo -e "${RED}[ERROR] Jalankan dari direktori Terraform!${NC}"; exit 1; }
-SONAR_IP=$(terraform output -raw sonarqube_public_ip 2>/dev/null)
-DOCKER_IP=$(terraform output -raw docker_public_ip 2>/dev/null)
-KEY_NAME=$(terraform output -json jenkins_ssh_command 2>/dev/null | python3 -c "import sys,json; s=json.load(sys.stdin); print(s.split('-i ')[1].split(' ')[0])" 2>/dev/null || echo "<your-key>.pem")
-WEBHOOK_URL=$(terraform output -raw github_webhook_url 2>/dev/null)
+# Validasi lunak: Cek apakah terraform bisa berjalan
+if ! command -v terraform &> /dev/null; then
+    echo -e "${RED}[ERROR] Perintah 'terraform' tidak ditemukan di environment ini!${NC}"
+    exit 1
+fi
+
+# Ambil data secara aman tanpa langsung mematikan skrip jika kosong
+JENKINS_IP=$(terraform output -raw jenkins_public_ip 2>/dev/null || terraform output -raw jenkins_ip 2>/dev/null || echo "")
+SONAR_IP=$(terraform output -raw sonarqube_public_ip 2>/dev/null || terraform output -raw sonarqube_ip 2>/dev/null || echo "")
+DOCKER_IP=$(terraform output -raw docker_public_ip 2>/dev/null || terraform output -raw docker_ip 2>/dev/null || echo "")
+WEBHOOK_URL=$(terraform output -raw github_webhook_url 2>/dev/null || echo "")
+KEY_NAME="labsuser.pem"
+
+# Jika IP krusial kosong, berikan peringatan tapi jangan langsung keluar
+if [ -z "$JENKINS_IP" ]; then
+    echo -e "${RED}[⚠️ WARNING] Terraform output tidak terbaca atau kosong.${NC}"
+    echo -e "${YELLOW}Mencoba membaca fallback manual... Silakan masukkan IP jika tahu.${NC}"
+    read -p "Masukkan IP Jenkins (kosongkan jika ingin skip): " MANUAL_JENKINS
+    if [ ! -z "$MANUAL_JENKINS" ]; then
+        JENKINS_IP=$MANUAL_JENKINS
+        SONAR_IP=$MANUAL_JENKINS
+        DOCKER_IP=$MANUAL_JENKINS
+    else
+        echo -e "${RED}[FAIL] Skrip tidak bisa dilanjutkan karena IP kosong. Pastikan sudah 'terraform apply'.${NC}"
+        exit 1
+    fi
+fi
 
 echo ""
 echo -e "${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
@@ -69,7 +87,6 @@ echo ""
 echo -e "   ${YELLOW}Cara verifikasi di GitHub:${NC}"
 echo -e "   → Buka: https://github.com/Widhi-yahya/web-profile/settings/hooks"
 echo -e "   → Cari webhook dengan URL: ${WEBHOOK_URL}"
-echo -e "   → Status harus: ${GREEN}✅ (centang hijau)${NC}"
 echo ""
 
 echo -e "${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
@@ -99,24 +116,24 @@ echo ""
 
 echo -e "${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
-echo -e "${GREEN}📖 Baca README.md untuk panduan lengkap konfigurasi Jenkins!${NC}"
-echo ""
 
-# ---- Cek status server (opsional) ----
+# ---- Cek status server ----
 echo -e "${YELLOW}[INFO] Memeriksa koneksi ke server (mungkin belum siap)...${NC}"
 echo ""
 
 for SERVER_INFO in "Jenkins:${JENKINS_IP}:8080" "SonarQube:${SONAR_IP}:9000" "Docker:${DOCKER_IP}:80"; do
   IFS=':' read -r NAME IP PORT <<< "${SERVER_INFO}"
-  if curl -s --connect-timeout 3 "http://${IP}:${PORT}" > /dev/null 2>&1; then
-    echo -e "   ${NAME} (http://${IP}:${PORT}) : ${GREEN}✅ Online${NC}"
-  else
-    echo -e "   ${NAME} (http://${IP}:${PORT}) : ${YELLOW}⏳ Belum siap (normal jika baru deploy)${NC}"
+  if [ ! -z "$IP" ]; then
+    if curl -s --connect-timeout 3 "http://${IP}:${PORT}" > /dev/null 2>&1; then
+      echo -e "   ${NAME} (http://${IP}:${PORT}) : ${GREEN}✅ Online${NC}"
+    else
+      echo -e "   ${NAME} (http://${IP}:${PORT}) : ${YELLOW}⏳ Belum siap (normal jika baru deploy)${NC}"
+    fi
   fi
 done
 
 echo ""
 echo -e "${BOLD}╔══════════════════════════════════════════════════════════════╗${NC}"
-echo -e "${BOLD}║  Selesai! Ikuti README.md untuk konfigurasi selanjutnya.     ║${NC}"
+echo -e "${BOLD}║  Selesai! Ikuti README.md untuk konfigurasi selanjutnya.      ║${NC}"
 echo -e "${BOLD}╚══════════════════════════════════════════════════════════════╝${NC}"
 echo ""
