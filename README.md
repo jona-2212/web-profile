@@ -1,4 +1,4 @@
-COBA UBAH 
+COBA UBAH ya
 
 # CI/CD Pipeline: Jenkins + SonarQube + Docker di AWS Academy
 ### Project: [web-profile](https://github.com/Widhi-yahya/web-profile) | Terraform Automated Infrastructure
